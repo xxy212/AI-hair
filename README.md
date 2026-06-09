@@ -127,9 +127,7 @@ src/
     └── tracking/
 ```
 
-## 协作注意
+## 注意
 
-- 不要提交 `.next/`、`node_modules/`、`.env*`。
-- 当前仓库只保留网页构建代码，`PRD/` 已在 `.gitignore` 中排除。
 - 如果要接真实 AI，优先替换 `src/lib/ai/generateResult.ts`，保持返回结构不变，避免结果页渲染被自由文本破坏。
 - 如果要接 Supabase，先执行 `src/lib/db/schema.sql`，再配置环境变量。
