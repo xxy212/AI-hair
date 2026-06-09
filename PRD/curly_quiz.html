@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>自然卷护理问卷</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500&display=swap');
+
+    :root {
+      --cream: #F5EFE6;
+      --warm-white: #FDFAF6;
+      --brown-dark: #2C1A0E;
+      --brown-mid: #6B3F1F;
+      --brown-light: #C4956A;
+      --brown-pale: #E8D5C0;
+      --brown-muted: #9E7B5E;
+      --green-soft: #7A9E7E;
+      --red-soft: #C4705A;
+      --border: #DFC9B0;
+      --shadow: 0 2px 20px rgba(44, 26, 14, 0.07);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--cream);
+      color: var(--brown-dark);
+      font-family: 'Noto Sans SC', -apple-system, sans-serif;
+      font-weight: 300;
+      min-height: 100vh;
+    }
+
+    /* ── Progress bar ── */
+    .progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%;
+      height: 3px;
+      background: var(--brown-pale);
+      z-index: 100;
+    }
+    .progress-fill {
+      height: 100%;
+      background: var(--brown-mid);
+      transition: width 0.4s ease;
+    }
+
+    /* ── Header ── */
+    .header {
+      padding: 28px 32px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .logo {
+      font-family: 'Noto Serif SC', serif;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--brown-mid);
+      letter-spacing: 0.05em;
+    }
+    .step-counter {
+      font-size: 13px;
+      color: var(--brown-muted);
+      letter-spacing: 0.08em;
+    }
+
+    /* ── Main layout ── */
+    .quiz-wrap {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 48px 24px 80px;
+    }
+
+    /* ── Screen (one question at a time) ── */
+    .screen {
+      display: none;
+      animation: fadeUp 0.35s ease both;
+    }
+    .screen.active { display: block; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Question header ── */
+    .q-eyebrow {
+      font-size: 12px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--brown-light);
+      margin-bottom: 14px;
+    }
+    .q-title {
+      font-family: 'Noto Serif SC', serif;
+      font-size: clamp(22px, 4vw, 30px);
+      font-weight: 600;
+      line-height: 1.35;
+      color: var(--brown-dark);
+      margin-bottom: 8px;
+    }
+    .q-hint {
+      font-size: 14px;
+      color: var(--brown-muted);
+      margin-bottom: 32px;
+      line-height: 1.6;
+    }
+
+    /* ── Choice cards ── */
+    .choices {
+      display: grid;
+      gap: 10px;
+    }
+    .choices.two-col {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .choice-btn {
+      background: var(--warm-white);
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      padding: 16px 20px;
+      text-align: left;
+      cursor: pointer;
+      font-family: 'Noto Sans SC', sans-serif;
+      font-size: 15px;
+      font-weight: 400;
+      color: var(--brown-dark);
+      line-height: 1.5;
+      transition: border-color 0.18s, background 0.18s, transform 0.12s;
+      position: relative;
+    }
+    .choice-btn:hover {
+      border-color: var(--brown-light);
+      background: #FDF6EE;
+      transform: translateY(-1px);
+    }
+    .choice-btn.selected {
+      border-color: var(--brown-mid);
+      background: #FBF0E4;
+    }
+    .choice-btn.selected::after {
+      content: "✓";
+      position: absolute;
+      right: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--brown-mid);
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .choice-btn .sub {
+      display: block;
+      font-size: 12px;
+      color: var(--brown-muted);
+      margin-top: 3px;
+    }
+
+    /* ── Region grid ── */
+    .region-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    .region-btn {
+      background: var(--warm-white);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 10px;
+      text-align: center;
+      cursor: pointer;
+      font-family: 'Noto Sans SC', sans-serif;
+      font-size: 14px;
+      color: var(--brown-dark);
+      transition: border-color 0.18s, background 0.18s;
+    }
+    .region-btn .region-label {
+      display: block;
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+    .region-btn .region-sub {
+      display: block;
+      font-size: 11px;
+      color: var(--brown-muted);
+      line-height: 1.4;
+    }
+    .region-btn:hover { border-color: var(--brown-light); background: #FDF6EE; }
+    .region-btn.selected { border-color: var(--brown-mid); background: #FBF0E4; }
+
+    /* ── Upload area ── */
+    .upload-area {
+      border: 2px dashed var(--brown-light);
+      border-radius: 18px;
+      background: var(--warm-white);
+      padding: 40px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .upload-area:hover {
+      border-color: var(--brown-mid);
+      background: #FDF6EE;
+    }
+    .upload-icon {
+      font-size: 32px;
+      margin-bottom: 12px;
+    }
+    .upload-title {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--brown-mid);
+      margin-bottom: 6px;
+    }
+    .upload-sub {
+      font-size: 13px;
+      color: var(--brown-muted);
+      line-height: 1.6;
+    }
+    .upload-skip-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .upload-skip-row .choice-btn {
+      flex: 1;
+      text-align: center;
+      font-size: 14px;
+      padding: 14px;
+    }
+
+    /* ── Branch follow-up ── */
+    .branch-box {
+      display: none;
+      background: #FBF0E4;
+      border: 1.5px solid var(--brown-pale);
+      border-radius: 16px;
+      padding: 24px;
+      margin-top: 14px;
+    }
+    .branch-box.open { display: block; animation: fadeUp 0.25s ease both; }
+    .branch-title {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--brown-mid);
+      margin-bottom: 14px;
+    }
+
+    /* ── Navigation ── */
+    .nav-row {
+      display: flex;
+      gap: 12px;
+      margin-top: 36px;
+      align-items: center;
+    }
+    .btn-back {
+      background: none;
+      border: 1.5px solid var(--border);
+      border-radius: 999px;
+      padding: 13px 28px;
+      font-family: 'Noto Sans SC', sans-serif;
+      font-size: 14px;
+      color: var(--brown-muted);
+      cursor: pointer;
+      transition: border-color 0.18s, color 0.18s;
+    }
+    .btn-back:hover { border-color: var(--brown-light); color: var(--brown-mid); }
+
+    .btn-next {
+      background: var(--brown-mid);
+      border: none;
+      border-radius: 999px;
+      padding: 14px 36px;
+      font-family: 'Noto Sans SC', sans-serif;
+      font-size: 15px;
+      font-weight: 500;
+      color: white;
+      cursor: pointer;
+      transition: background 0.18s, transform 0.12s;
+      flex: 1;
+    }
+    .btn-next:hover { background: var(--brown-dark); transform: translateY(-1px); }
+    .btn-next:disabled {
+      background: var(--brown-pale);
+      color: var(--brown-muted);
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* ── Result / Done screen ── */
+    .done-screen {
+      display: none;
+      text-align: center;
+      padding: 48px 0;
+      animation: fadeUp 0.4s ease both;
+    }
+    .done-screen.active { display: block; }
+    .done-icon { font-size: 52px; margin-bottom: 20px; }
+    .done-title {
+      font-family: 'Noto Serif SC', serif;
+      font-size: 28px;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+    .done-sub {
+      font-size: 16px;
+      color: var(--brown-muted);
+      line-height: 1.7;
+      max-width: 440px;
+      margin: 0 auto 32px;
+    }
+    .btn-submit {
+      background: var(--brown-mid);
+      border: none;
+      border-radius: 999px;
+      padding: 16px 48px;
+      font-family: 'Noto Sans SC', sans-serif;
+      font-size: 16px;
+      font-weight: 500;
+      color: white;
+      cursor: pointer;
+    }
+
+    /* ── Divider label ── */
+    .divider-label {
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--brown-muted);
+      text-align: center;
+      margin: 20px 0 12px;
+    }
+
+    @media (max-width: 520px) {
+      .choices.two-col { grid-template-columns: 1fr; }
+      .region-grid { grid-template-columns: repeat(2, 1fr); }
+      .quiz-wrap { padding: 36px 16px 64px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="progress-bar">
+  <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+</div>
+
+<div class="header">
+  <div class="logo">自然卷护理助手</div>
+  <div class="step-counter" id="stepCounter">1 / 7</div>
+</div>
+
+<div class="quiz-wrap">
+
+  <!-- Q1 烦恼 -->
+  <div class="screen active" id="screen-1">
+    <div class="q-eyebrow">问题 01</div>
+    <div class="q-title">你现在头发最让你烦恼的是什么？</div>
+    <div class="q-hint">可多选，选完后点击继续</div>
+    <div class="choices" id="q1-choices">
+      <button class="choice-btn" data-multi="true" onclick="toggleMulti(this)">毛躁、蓬、炸，控制不住</button>
+      <button class="choice-btn" data-multi="true" onclick="toggleMulti(this)">卷度不清晰，看起来只是乱不是卷</button>
+      <button class="choice-btn" data-multi="true" onclick="toggleMulti(this)">效果持久度差，撑不了一天甚至睡一觉就散了</button>
+      <button class="choice-btn" data-multi="true" onclick="toggleMulti(this)">全头卷度不一致，有的地方卷有的地方不卷</button>
+      <button class="choice-btn" data-multi="true" onclick="toggleMulti(this)">其他<span class="sub">选完后可在聊天里补充说明</span></button>
+    </div>
+    <div class="nav-row">
+      <button class="btn-next" id="next-1" onclick="goTo(2)" disabled>继续</button>
+    </div>
+  </div>
+
+  <!-- Q2 CGM经验 + 追问 -->
+  <div class="screen" id="screen-2">
+    <div class="q-eyebrow">问题 02</div>
+    <div class="q-title">你有尝试过 CGM（自然卷护理法）吗？</div>
+    <div class="q-hint">CGM 即 Curly Girl Method，专门针对自然卷的护理体系</div>
+    <div class="choices" id="q2-choices">
+      <button class="choice-btn" onclick="selectSingle(this, 'q2'); hideBranch(); enableNext('next-2')">没有，完全不知道从哪里开始</button>
+      <button class="choice-btn" onclick="selectSingle(this, 'q2'); hideBranch(); enableNext('next-2')">了解过一些，但还没有系统尝试</button>
+      <button class="choice-btn" onclick="selectSingle(this, 'q2'); hideBranch(); enableNext('next-2')">尝试过但坚持不下来，太麻烦或效果不明显</button>
+      <button class="choice-btn" onclick="selectSingle(this, 'q2'); showBranch(); enableNext('next-2')">有自己的护理流程，在坚持</button>
+    </div>
+
+    <!-- 追问 branch -->
+    <div class="branch-box" id="branch-q2">
+      <div class="branch-title">你的护理流程坚持多久了？</div>
+      <div class="choices" id="q2b-duration" style="margin-bottom:20px;">
+        <div class="choices two-col">
+          <button class="choice-btn" onclick="selectSingle(this, 'q2b-duration')" style="text-align:center;">半年以内</button>
+          <button class="choice-btn" onclick="selectSingle(this, 'q2b-duration')" style="text-align:center;">半年到一年</button>
+          <button class="choice-btn" onclick="selectSingle(this, 'q2b-duration')" style="text-align:center;">一年到两年</button>
+          <button class="choice-btn" onclick="selectSingle(this, 'q2b-duration')" style="text-align:center;">两年以上</button>
+        </div>
+      </div>
+
+      <div class="branch-title">你现在的护理流程大概是怎样的？<span style="font-weight:300;font-size:13px;color:var(--brown-muted)">（可多选）</span></div>
+      <div class="choices">
+        <button class="choice-btn" data-multi="true" onclick="toggleMulti(this)">用无硅油洗发水</button>
+        <button class="choice-btn" data-multi="true" onclick="toggleMulti(this)">洗发时会用发膜或护发素</button>
+        <button class="choice-btn" data-multi="true" onclick="toggleMulti(this)">洗发后会用免洗护发素</button>
+        <button class="choice-btn" data-multi="true" onclick="toggleMulti(this)">有用造型产品（弹力素 / 卷发霜 / 啫喱 / 摩丝）</button>
+        <button class="choice-btn" data-multi="true" onclick="toggleMulti(this)">会分区用造型梳或手指造型</button>
+        <button class="choice-btn" data-multi="true" onclick="toggleMulti(this)">会用「咕叽咕叽」手法让护发素或造型产品充分吸收</button>
+        <button class="choice-btn" data-multi="true" onclick="toggleMulti(this)">用微纤维毛巾或散水帽控水</button>
+        <button class="choice-btn" data-multi="true" onclick="toggleMulti(this)">会用烘干罩烘干头发</button>
+        <button class="choice-btn" data-multi="true" onclick="toggleMulti(this)">会用精油或护发油收尾</button>
+      </div>
+    </div>
+
+    <div class="nav-row">
+      <button class="btn-back" onclick="goTo(1)">← 返回</button>
+      <button class="btn-next" id="next-2" onclick="goTo(3)" disabled>继续</button>
+    </div>
+  </div>
+
+  <!-- Q3 染烫 -->
+  <div class="screen" id="screen-3">
+    <div class="q-eyebrow">问题 03</div>
+    <div class="q-title">你的头发有染或烫过吗？</div>
+    <div class="q-hint">这会影响发质健康度和适合的产品成分</div>
+    <div class="choices">
+      <button class="choice-btn" onclick="selectSingle(this, 'q3'); enableNext('next-3')">没有，保持原生发质</button>
+      <button class="choice-btn" onclick="selectSingle(this, 'q3'); enableNext('next-3')">染过色（包括挑染）</button>
+      <button class="choice-btn" onclick="selectSingle(this, 'q3'); enableNext('next-3')">烫过（离子烫拉直 / 热烫卷）</button>
+      <button class="choice-btn" onclick="selectSingle(this, 'q3'); enableNext('next-3')">染和烫都做过</button>
+    </div>
+    <div class="nav-row">
+      <button class="btn-back" onclick="goTo(2)">← 返回</button>
+      <button class="btn-next" id="next-3" onclick="goTo(4)" disabled>继续</button>
+    </div>
+  </div>
+
+  <!-- Q4 孔隙度 -->
+  <div class="screen" id="screen-4">
+    <div class="q-eyebrow">问题 04</div>
+    <div class="q-title">洗头的时候，头发容不容易打湿？</div>
+    <div class="q-hint">这帮助我们判断你的发质孔隙度，影响产品吸收方式</div>
+    <div class="choices">
+      <button class="choice-btn" onclick="selectSingle(this, 'q4'); enableNext('next-4')">
+        很难打湿，水像滑过去一样
+        <span class="sub">→ 低孔隙度，产品不易吸收</span>
+      </button>
+      <button class="choice-btn" onclick="selectSingle(this, 'q4'); enableNext('next-4')">
+        正常，几秒就湿透
+        <span class="sub">→ 中等孔隙度</span>
+      </button>
+      <button class="choice-btn" onclick="selectSingle(this, 'q4'); enableNext('next-4')">
+        很快就湿透，几乎瞬间吸水
+        <span class="sub">→ 高孔隙度，容易吸收也容易流失水分</span>
+      </button>
+    </div>
+    <div class="nav-row">
+      <button class="btn-back" onclick="goTo(3)">← 返回</button>
+      <button class="btn-next" id="next-4" onclick="goTo(5)" disabled>继续</button>
+    </div>
+  </div>
+
+  <!-- Q5 地区 -->
+  <div class="screen" id="screen-5">
+    <div class="q-eyebrow">问题 05</div>
+    <div class="q-title">你主要生活在哪个地区？</div>
+    <div class="q-hint">气候会影响产品选择，南方湿热和北方干燥的方案很不一样</div>
+    <div class="region-grid">
+      <button class="region-btn" onclick="selectRegion(this); enableNext('next-5')">
+        <span class="region-label">华南</span>
+        <span class="region-sub">广东 广西 海南 福建</span>
+      </button>
+      <button class="region-btn" onclick="selectRegion(this); enableNext('next-5')">
+        <span class="region-label">华东</span>
+        <span class="region-sub">上海 江苏 浙江 安徽</span>
+      </button>
+      <button class="region-btn" onclick="selectRegion(this); enableNext('next-5')">
+        <span class="region-label">华中</span>
+        <span class="region-sub">湖南 湖北 江西 河南</span>
+      </button>
+      <button class="region-btn" onclick="selectRegion(this); enableNext('next-5')">
+        <span class="region-label">华北 / 东北</span>
+        <span class="region-sub">北京 天津 河北 东三省</span>
+      </button>
+      <button class="region-btn" onclick="selectRegion(this); enableNext('next-5')">
+        <span class="region-label">西南</span>
+        <span class="region-sub">四川 云南 贵州 重庆</span>
+      </button>
+      <button class="region-btn" onclick="selectRegion(this); enableNext('next-5')">
+        <span class="region-label">西北</span>
+        <span class="region-sub">陕西 新疆 甘肃 宁夏</span>
+      </button>
+    </div>
+    <div class="nav-row">
+      <button class="btn-back" onclick="goTo(4)">← 返回</button>
+      <button class="btn-next" id="next-5" onclick="goTo(6)" disabled>继续</button>
+    </div>
+  </div>
+
+  <!-- Q6 预算 -->
+  <div class="screen" id="screen-6">
+    <div class="q-eyebrow">问题 06</div>
+    <div class="q-title">你对单品的预算大概是多少？</div>
+    <div class="q-hint">以 250ml 容量为参考</div>
+    <div class="choices two-col">
+      <button class="choice-btn" onclick="selectSingle(this, 'q6'); enableNext('next-6')" style="text-align:center;">
+        50 元以内
+      </button>
+      <button class="choice-btn" onclick="selectSingle(this, 'q6'); enableNext('next-6')" style="text-align:center;">
+        50 — 150 元
+      </button>
+      <button class="choice-btn" onclick="selectSingle(this, 'q6'); enableNext('next-6')" style="text-align:center;">
+        150 — 300 元
+      </button>
+      <button class="choice-btn" onclick="selectSingle(this, 'q6'); enableNext('next-6')" style="text-align:center;">
+        300 元以上
+      </button>
+    </div>
+    <div class="nav-row">
+      <button class="btn-back" onclick="goTo(5)">← 返回</button>
+      <button class="btn-next" id="next-6" onclick="goTo(7)" disabled>继续</button>
+    </div>
+  </div>
+
+  <!-- Q7 产品上传 -->
+  <div class="screen" id="screen-7">
+    <div class="q-eyebrow">问题 07</div>
+    <div class="q-title">你现在在用什么护理产品？</div>
+    <div class="q-hint">上传照片，AI 帮你看看现有产品如何搭配优化。洗发水、护发素、造型产品都可以上传。</div>
+
+    <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+      <div class="upload-icon">📸</div>
+      <div class="upload-title">点击上传产品照片</div>
+      <div class="upload-sub">支持多张 · 拍产品背面成分表更佳<br/>不需要露脸，拍清楚产品名称即可</div>
+    </div>
+    <input type="file" id="fileInput" multiple accept="image/*" style="display:none" onchange="handleUpload(this)" />
+
+    <div class="upload-skip-row">
+      <button class="choice-btn" onclick="selectSingle(this, 'q7skip'); enableNext('next-7')">现在不方便拍照，手动输入产品名</button>
+      <button class="choice-btn" onclick="selectSingle(this, 'q7skip'); enableNext('next-7')">先跳过，之后在聊天里补充</button>
+    </div>
+
+    <div class="nav-row">
+      <button class="btn-back" onclick="goTo(6)">← 返回</button>
+      <button class="btn-next" id="next-7" onclick="showDone()" disabled>生成我的护理方案 →</button>
+    </div>
+  </div>
+
+  <!-- Done -->
+  <div class="done-screen" id="screen-done">
+    <div class="done-icon">✨</div>
+    <div class="done-title">收到啦，正在为你生成护理方案</div>
+    <div class="done-sub">AI 正在综合你的照片和问卷信息，生成专属发质画像和护理建议，大约需要几秒钟。</div>
+    <button class="btn-submit">查看我的护理方案</button>
+  </div>
+
+</div>
+
+<script>
+  const TOTAL = 7;
+  let currentScreen = 1;
+
+  function goTo(n) {
+    document.getElementById('screen-' + currentScreen).classList.remove('active');
+    currentScreen = n;
+    document.getElementById('screen-' + n).classList.add('active');
+    updateProgress();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function showDone() {
+    document.getElementById('screen-' + currentScreen).classList.remove('active');
+    document.getElementById('screen-done').classList.add('active');
+    document.getElementById('progressFill').style.width = '100%';
+    document.getElementById('stepCounter').textContent = '完成';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function updateProgress() {
+    const pct = ((currentScreen - 1) / TOTAL) * 100;
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('stepCounter').textContent = currentScreen + ' / ' + TOTAL;
+  }
+
+  function enableNext(id) {
+    document.getElementById(id).disabled = false;
+  }
+
+  // Single select
+  function selectSingle(btn, groupId) {
+    const parent = btn.closest('.choices, .upload-skip-row');
+    if (parent) {
+      parent.querySelectorAll('.choice-btn').forEach(b => b.classList.remove('selected'));
+    }
+    btn.classList.add('selected');
+  }
+
+  // Multi select
+  function toggleMulti(btn) {
+    btn.classList.toggle('selected');
+    // enable next if at least one selected
+    const anySelected = btn.closest('.choices').querySelector('.selected');
+    const screen = btn.closest('.screen');
+    if (screen) {
+      const nextBtn = screen.querySelector('.btn-next');
+      if (nextBtn) nextBtn.disabled = !anySelected;
+    }
+  }
+
+  // Region select
+  function selectRegion(btn) {
+    document.querySelectorAll('.region-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+  }
+
+  // Branch
+  function showBranch() {
+    document.getElementById('branch-q2').classList.add('open');
+  }
+  function hideBranch() {
+    document.getElementById('branch-q2').classList.remove('open');
+  }
+
+  // Upload
+  function handleUpload(input) {
+    if (input.files.length > 0) {
+      document.getElementById('next-7').disabled = false;
+      const uploadArea = document.querySelector('.upload-area');
+      uploadArea.querySelector('.upload-title').textContent = `已选择 ${input.files.length} 张照片`;
+      uploadArea.querySelector('.upload-sub').textContent = '点击可重新选择';
+    }
+  }
+
+  updateProgress();
+</script>
+
+</body>
+</html>

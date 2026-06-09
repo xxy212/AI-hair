@@ -1,0 +1,1288 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI 自然卷护理助手 MVP 规划 v0.7</title>
+  <style>
+    :root {
+      --bg: #f7f3ee;
+      --card: #ffffff;
+      --text: #2b2118;
+      --muted: #7c6f66;
+      --primary: #8b5e3c;
+      --primary-dark: #5f3b24;
+      --accent: #d9a566;
+      --soft: #f1e3d3;
+      --soft-2: #ead6c1;
+      --green: #6f8f72;
+      --blue: #6d8ca0;
+      --danger: #b65f4f;
+      --border: #e4d4c4;
+      --shadow: 0 18px 40px rgba(70, 45, 25, 0.08);
+      --radius-lg: 24px;
+      --radius-md: 16px;
+      --radius-sm: 10px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+        "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif;
+      background:
+        radial-gradient(circle at top left, #f4dfc4 0, transparent 30%),
+        radial-gradient(circle at top right, #ead4bc 0, transparent 24%),
+        var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+    }
+
+    .page {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 48px 24px 80px;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, #fffaf5, #f1dfcc);
+      border: 1px solid var(--border);
+      border-radius: 32px;
+      padding: 48px;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      right: -80px;
+      top: -80px;
+      width: 240px;
+      height: 240px;
+      border-radius: 999px;
+      background: rgba(139, 94, 60, 0.12);
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: #fff;
+      color: var(--primary-dark);
+      font-weight: 700;
+      font-size: 13px;
+      border: 1px solid var(--border);
+    }
+
+    h1 {
+      margin: 24px 0 12px;
+      font-size: clamp(34px, 5vw, 58px);
+      line-height: 1.08;
+      letter-spacing: -1px;
+    }
+
+    .hero-subtitle {
+      max-width: 780px;
+      font-size: 20px;
+      color: var(--muted);
+      margin-bottom: 28px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-top: 32px;
+    }
+
+    .metric {
+      background: rgba(255, 255, 255, 0.72);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 18px;
+    }
+
+    .metric strong {
+      display: block;
+      font-size: 22px;
+      color: var(--primary-dark);
+      margin-bottom: 4px;
+    }
+
+    .metric span {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    section { margin-top: 34px; }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    h2 {
+      font-size: 28px;
+      margin: 0;
+      letter-spacing: -0.3px;
+    }
+
+    .section-note {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .card h3 { margin: 0 0 12px; font-size: 20px; }
+    .card p { margin: 0; color: var(--muted); }
+
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: var(--soft);
+      color: var(--primary-dark);
+      font-size: 13px;
+      font-weight: 650;
+    }
+
+    .tag.green { background: #e4eddc; color: #456446; }
+    .tag.blue { background: #e0edf2; color: #426172; }
+    .tag.red { background: #f1ddd8; color: #8e4338; }
+
+    /* Flowchart */
+    .flowchart {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      padding: 28px;
+      box-shadow: var(--shadow);
+      overflow-x: auto;
+    }
+
+    .flow-row {
+      display: flex;
+      align-items: stretch;
+      gap: 12px;
+      min-width: 1040px;
+    }
+
+    .flow-node {
+      flex: 1;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: linear-gradient(180deg, #fff, #fff8f0);
+      padding: 18px 16px;
+      min-height: 150px;
+      position: relative;
+    }
+
+    .flow-node .num {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: white;
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      margin-bottom: 12px;
+    }
+
+    .flow-node h3 {
+      margin: 0 0 8px;
+      font-size: 17px;
+    }
+
+    .flow-node p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .flow-arrow {
+      width: 34px;
+      display: grid;
+      place-items: center;
+      color: var(--primary);
+      font-size: 26px;
+      font-weight: 900;
+      flex: 0 0 34px;
+    }
+
+    .flow-meta {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .mini-note {
+      background: #faf2e8;
+      border: 1px dashed var(--border);
+      border-radius: 16px;
+      padding: 14px 16px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    /* Wireframes */
+    .wireframe-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+
+    .wire-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .wire-card h3 {
+      margin: 0 0 12px;
+      font-size: 18px;
+      color: var(--primary-dark);
+    }
+
+    .phone {
+      width: 100%;
+      min-height: 420px;
+      border: 2px solid #3a2c22;
+      border-radius: 30px;
+      padding: 14px;
+      background: #fffaf5;
+      position: relative;
+    }
+
+    .phone::before {
+      content: "";
+      position: absolute;
+      top: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 64px;
+      height: 7px;
+      border-radius: 999px;
+      background: #3a2c22;
+      opacity: 0.2;
+    }
+
+    .screen {
+      margin-top: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .wf-title {
+      height: 20px;
+      width: 70%;
+      border-radius: 999px;
+      background: var(--primary);
+      opacity: 0.9;
+    }
+
+    .wf-subtitle {
+      height: 12px;
+      width: 92%;
+      border-radius: 999px;
+      background: var(--soft-2);
+    }
+
+    .wf-subtitle.short { width: 58%; }
+
+    .wf-hero-img {
+      height: 110px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, #f0d3b4, #d9a566);
+      border: 1px solid var(--border);
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-weight: 800;
+    }
+
+    .wf-button {
+      height: 38px;
+      border-radius: 999px;
+      background: var(--primary);
+    }
+
+    .home-title-text {
+      font-weight: 900;
+      font-size: 18px;
+      line-height: 1.25;
+      color: var(--primary-dark);
+      margin-top: 2px;
+    }
+
+    .home-copy {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .case-card-mini {
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: #fff;
+      padding: 10px;
+      display: grid;
+      grid-template-columns: 34px 1fr;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .case-avatar-mini {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #d9a566, #8b5e3c);
+    }
+
+    .case-lines-mini {
+      display: grid;
+      gap: 5px;
+    }
+
+    .case-lines-mini span {
+      display: block;
+      height: 8px;
+      border-radius: 999px;
+      background: #ead6c1;
+    }
+
+    .case-lines-mini span:nth-child(1) { width: 74%; }
+    .case-lines-mini span:nth-child(2) { width: 92%; }
+    .case-lines-mini span:nth-child(3) { width: 58%; }
+
+    .feature-grid-mini {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+
+    .feature-mini {
+      min-height: 58px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: #f7eadc;
+      padding: 8px;
+      font-size: 12px;
+      color: var(--primary-dark);
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      line-height: 1.25;
+    }
+
+
+    .mini-section-title {
+      font-size: 12px;
+      color: var(--primary-dark);
+      font-weight: 800;
+      margin-top: 2px;
+      margin-bottom: 6px;
+    }
+
+    .nav-mini {
+      height: 18px;
+      border-radius: 999px;
+      background: #ead6c1;
+      width: 38%;
+      margin-bottom: 6px;
+    }
+
+    .chip-row-mini {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .chip-mini {
+      height: 24px;
+      padding: 0 10px;
+      border-radius: 999px;
+      background: #fff;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 11px;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .tip-card-mini {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: #fff;
+      padding: 10px;
+      display: grid;
+      gap: 6px;
+    }
+
+    .tip-line-mini {
+      height: 8px;
+      border-radius: 999px;
+      background: #ead6c1;
+    }
+
+    .tip-line-mini.short { width: 62%; }
+    .tip-line-mini.mid { width: 78%; }
+
+    .product-list-mini,
+    .tutorial-list-mini {
+      display: grid;
+      gap: 8px;
+    }
+
+    .product-mini {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: #fff;
+      padding: 10px;
+      display: grid;
+      grid-template-columns: 36px 1fr;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .product-thumb-mini {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #f0d3b4, #d9a566);
+    }
+
+    .product-lines-mini {
+      display: grid;
+      gap: 5px;
+    }
+
+    .product-lines-mini span {
+      display: block;
+      height: 8px;
+      border-radius: 999px;
+      background: #ead6c1;
+    }
+
+    .product-lines-mini span:nth-child(1) { width: 66%; }
+    .product-lines-mini span:nth-child(2) { width: 92%; }
+
+    .tutorial-mini {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: #fff;
+      padding: 10px;
+      display: grid;
+      grid-template-columns: 24px 1fr;
+      gap: 8px;
+      align-items: start;
+    }
+
+    .tutorial-num-mini {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 800;
+      display: grid;
+      place-items: center;
+    }
+
+    .tutorial-text-mini {
+      display: grid;
+      gap: 5px;
+    }
+
+    .tutorial-text-mini span {
+      display: block;
+      height: 8px;
+      border-radius: 999px;
+      background: #ead6c1;
+    }
+
+    .tutorial-text-mini span:nth-child(1) { width: 84%; }
+    .tutorial-text-mini span:nth-child(2) { width: 58%; }
+
+    .input-mini {
+      height: 34px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: #fff;
+    }
+
+    .upload-box {
+      height: 150px;
+      border: 2px dashed var(--accent);
+      border-radius: 18px;
+      background: #fff6ec;
+      display: grid;
+      place-items: center;
+      color: var(--primary-dark);
+      font-weight: 800;
+      text-align: center;
+      padding: 14px;
+    }
+
+    .choice-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .choice {
+      height: 44px;
+      border-radius: 14px;
+      background: #f1e3d3;
+      border: 1px solid var(--border);
+    }
+
+    .progress {
+      height: 8px;
+      border-radius: 999px;
+      background: #ead6c1;
+      overflow: hidden;
+    }
+
+    .progress span {
+      display: block;
+      height: 100%;
+      width: 45%;
+      background: var(--primary);
+    }
+
+    .analysis-lines {
+      display: grid;
+      gap: 10px;
+      margin-top: 6px;
+    }
+
+    .analysis-line {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--primary);
+      flex: 0 0 auto;
+    }
+
+    .result-card {
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: #fff;
+      padding: 12px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .result-card .bar {
+      height: 11px;
+      border-radius: 999px;
+      background: #ead6c1;
+    }
+
+    .result-card .bar.w70 { width: 70%; }
+    .result-card .bar.w90 { width: 90%; }
+    .result-card .bar.w55 { width: 55%; }
+
+    .chat-bubble {
+      padding: 10px 12px;
+      border-radius: 16px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .chat-bubble.ai {
+      background: #f1e3d3;
+      align-self: flex-start;
+      max-width: 88%;
+    }
+
+    .chat-bubble.user {
+      background: var(--primary);
+      color: #fff;
+      align-self: flex-end;
+      max-width: 82%;
+    }
+
+    .quick-questions {
+      display: grid;
+      gap: 8px;
+    }
+
+    .quick {
+      height: 28px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: #fff;
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      overflow: hidden;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      background: #fff;
+      box-shadow: var(--shadow);
+    }
+
+    .table th,
+    .table td {
+      padding: 15px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+
+    .table th {
+      background: #f4e7d8;
+      color: var(--primary-dark);
+      font-size: 14px;
+    }
+
+    .table tr:last-child td { border-bottom: none; }
+    .table td { color: var(--muted); font-size: 14px; }
+
+    .architecture {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 18px;
+    }
+
+    .pipeline {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .pipe-item {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 16px 18px;
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .pipe-item strong { color: var(--primary-dark); }
+    .pipe-item span { color: var(--muted); font-size: 14px; }
+
+    .arrow {
+      text-align: center;
+      color: var(--primary);
+      font-weight: 900;
+      margin: -4px 0;
+    }
+
+    .timeline {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    .week {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      box-shadow: var(--shadow);
+    }
+
+    .week .label {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: var(--primary);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 800;
+      margin-bottom: 10px;
+    }
+
+    .week h3 { margin: 6px 0 8px; font-size: 18px; }
+
+    .week ul {
+      padding-left: 18px;
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .callout {
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      border: 1px solid var(--border);
+      background: linear-gradient(135deg, #fff, #f4e4d3);
+      box-shadow: var(--shadow);
+    }
+
+    .callout h3 { margin-top: 0; font-size: 22px; }
+    .callout p { color: var(--muted); margin-bottom: 0; }
+
+    .decision-list { display: grid; gap: 12px; }
+
+    .decision {
+      display: grid;
+      grid-template-columns: 180px 1fr;
+      gap: 16px;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 16px;
+    }
+
+    .decision strong { color: var(--primary-dark); }
+    .decision span { color: var(--muted); }
+
+    .discussion {
+      background: #2b2118;
+      color: #fff;
+      border-radius: 28px;
+      padding: 34px;
+      box-shadow: var(--shadow);
+    }
+
+    .discussion h2 { color: #fff; margin-bottom: 14px; }
+
+    .discussion-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .discussion-item {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: var(--radius-md);
+      padding: 18px;
+    }
+
+    .discussion-item strong { display: block; margin-bottom: 6px; }
+    .discussion-item span { color: #d8c8b6; font-size: 14px; }
+
+    .footer {
+      margin-top: 36px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    @media (max-width: 980px) {
+      .hero { padding: 34px; }
+      .hero-grid,
+      .grid-3,
+      .timeline,
+      .wireframe-grid { grid-template-columns: repeat(2, 1fr); }
+      .architecture,
+      .grid-2 { grid-template-columns: 1fr; }
+      .flow-meta { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 640px) {
+      .page { padding: 24px 14px 56px; }
+      .hero { padding: 26px; border-radius: 24px; }
+      .hero-grid,
+      .grid-3,
+      .timeline,
+      .wireframe-grid,
+      .discussion-grid { grid-template-columns: 1fr; }
+      .decision { grid-template-columns: 1fr; }
+      h1 { font-size: 36px; }
+      h2 { font-size: 24px; }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="page">
+    <header class="hero">
+      <div class="eyebrow">MVP Planning · AI 自然卷护理助手 · v0.7</div>
+      <h1>面向中国自然卷新手的<br />AI 卷发护理助手</h1>
+      <p class="hero-subtitle">
+        通过“照片 + 问卷 + AI API”跑通完整产品形态：
+        用户获得发质画像、产品类型建议、示例产品、护理教程，并可通过聊天反馈继续调整。
+      </p>
+
+      <div class="tag-row">
+        <span class="tag">首版市场：中国自然卷新手</span>
+        <span class="tag green">目标：可用 MVP</span>
+        <span class="tag red">不追求准确率，先跑通形态</span>
+      </div>
+
+      <div class="hero-grid">
+        <div class="metric">
+          <strong>1 个闭环</strong>
+          <span>照片 → 问卷 → 推荐 → 教程 → 聊天反馈</span>
+        </div>
+        <div class="metric">
+          <strong>30 条数据</strong>
+          <span>先用轻量种子产品库支撑 Demo</span>
+        </div>
+        <div class="metric">
+          <strong>4 个 AI 模块</strong>
+          <span>照片分析、发质画像、产品建议、教程生成</span>
+        </div>
+        <div class="metric">
+          <strong>可讨论形态</strong>
+          <span>先把体验链路做出来，再逐步补准确率</span>
+        </div>
+      </div>
+    </header>
+
+    <section>
+      <div class="section-title">
+        <h2>01 · MVP 核心定位</h2>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>产品一句话</h3>
+          <p>
+            面向中国自然卷新手的 AI 卷发护理助手，帮助用户理解自己的发质，
+            并生成入门护理方案、产品选择建议和使用教程。
+          </p>
+        </div>
+
+        <div class="card">
+          <h3>第一版成功标准</h3>
+          <p>
+            用户能完整经历一次“上传照片 + 填问卷 + 获得推荐 + 查看教程 + 聊天反馈”的流程，
+            并觉得这像一个真正的产品，而不是普通聊天机器人。
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-title">
+        <h2>02 · 用户主流程图</h2>
+      </div>
+
+      <div class="flowchart">
+        <div class="flow-row">
+          <div class="flow-node">
+            <div class="num">1</div>
+            <h3>进入首页</h3>
+            <p>用户看到产品价值：上传照片，回答几个问题，获得自然卷护理方案。</p>
+          </div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-node">
+            <div class="num">2</div>
+            <h3>上传头发照片</h3>
+            <p>照片用于辅助判断卷度、毛躁、发量、干枯情况；不做专业诊断承诺。</p>
+          </div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-node">
+            <div class="num">3</div>
+            <h3>填写问卷</h3>
+            <p>补充头皮、预算、目标、已有产品、染烫情况等照片看不到的信息。</p>
+          </div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-node">
+            <div class="num">4</div>
+            <h3>AI 生成画像</h3>
+            <p>输出用户看得懂的发质总结、主要问题、护理策略和避坑提示。</p>
+          </div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-node">
+            <div class="num">5</div>
+            <h3>推荐与教程</h3>
+            <p>给出产品类型、示例产品、使用顺序、洗头日教程和第二天 refresh。</p>
+          </div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-node">
+            <div class="num">6</div>
+            <h3>聊天反馈调整</h3>
+            <p>用户继续追问预算、偏好、已有产品，AI 根据反馈调整建议。</p>
+          </div>
+        </div>
+
+        <div class="flow-meta">
+          <div class="mini-note"><strong>输入：</strong>照片、问卷、用户反馈。</div>
+          <div class="mini-note"><strong>处理：</strong>多模态 AI API + LLM 结构化输出。</div>
+          <div class="mini-note"><strong>输出：</strong>发质画像、产品建议、护理教程、调整建议。</div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-title">
+        <h2>03 · 页面规划</h2>
+      </div>
+
+      <div class="wireframe-grid">
+        <div class="wire-card">
+          <h3>首页：成功案例 + 功能介绍</h3>
+          <div class="phone">
+            <div class="screen">
+              <div class="nav-mini"></div>
+              <div class="home-title-text">先看看别人如何建立自然卷护理 routine</div>
+              <div class="home-copy">首页先展示成功案例，再介绍我们能提供的帮助，降低新用户开始测试的门槛。</div>
+
+              <div class="mini-section-title">成功案例</div>
+              <div class="case-card-mini">
+                <div class="case-avatar-mini"></div>
+                <div class="case-lines-mini">
+                  <span></span><span></span><span></span>
+                </div>
+              </div>
+              <div class="case-card-mini">
+                <div class="case-avatar-mini"></div>
+                <div class="case-lines-mini">
+                  <span></span><span></span><span></span>
+                </div>
+              </div>
+
+              <div class="mini-section-title">主要功能</div>
+              <div class="feature-grid-mini">
+                <div class="feature-mini">上传照片<br />辅助分析</div>
+                <div class="feature-mini">问卷生成<br />个人画像</div>
+                <div class="feature-mini">产品推荐<br />与示例</div>
+                <div class="feature-mini">护理教程<br />继续追问</div>
+              </div>
+
+              <div class="wf-button"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="wire-card">
+          <h3>照片上传页：上传 + 拍摄提示</h3>
+          <div class="phone">
+            <div class="screen">
+              <div class="nav-mini"></div>
+              <div class="home-title-text">上传你的头发照片</div>
+              <div class="home-copy">建议自然光、自然状态、不需要露脸，尽量拍到整体轮廓和发尾。</div>
+              <div class="upload-box">点击上传 / 拍照<br />展示头发整体状态</div>
+              <div class="chip-row-mini">
+                <div class="chip-mini">自然光</div>
+                <div class="chip-mini">不必露脸</div>
+                <div class="chip-mini">拍到发尾</div>
+              </div>
+              <div class="tip-card-mini">
+                <div class="tip-line-mini"></div>
+                <div class="tip-line-mini mid"></div>
+                <div class="tip-line-mini short"></div>
+              </div>
+              <div class="wf-button"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="wire-card">
+          <h3>问卷页：基础信息收集</h3>
+          <div class="phone">
+            <div class="screen">
+              <div class="progress"><span></span></div>
+              <div class="home-title-text">你的头皮状态更接近哪种？</div>
+              <div class="home-copy">通过几道简单问题，补充照片无法判断的信息。</div>
+              <div class="choice-row">
+                <div class="choice"></div>
+                <div class="choice"></div>
+                <div class="choice"></div>
+                <div class="choice"></div>
+              </div>
+              <div class="mini-section-title">后续问题示意</div>
+              <div class="chip-row-mini">
+                <div class="chip-mini">发量</div>
+                <div class="chip-mini">预算</div>
+                <div class="chip-mini">已有产品</div>
+                <div class="chip-mini">护理目标</div>
+              </div>
+              <div class="wf-button"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="wire-card">
+          <h3>AI 分析页：生成发质画像</h3>
+          <div class="phone">
+            <div class="screen">
+              <div class="wf-hero-img">正在生成你的专属建议</div>
+              <div class="analysis-lines">
+                <div class="analysis-line"><span class="dot"></span>分析卷度、毛躁和发量</div>
+                <div class="analysis-line"><span class="dot"></span>结合问卷整理发质画像</div>
+                <div class="analysis-line"><span class="dot"></span>匹配产品与护理教程</div>
+              </div>
+              <div class="mini-section-title">分析结果预览</div>
+              <div class="result-card">
+                <div class="bar w90"></div>
+                <div class="bar w70"></div>
+                <div class="bar w55"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="wire-card">
+          <h3>结果页：画像 + 推荐 + 教程</h3>
+          <div class="phone">
+            <div class="screen">
+              <div class="home-title-text">你的自然卷护理建议</div>
+              <div class="mini-section-title">发质画像</div>
+              <div class="result-card">
+                <div class="bar w90"></div>
+                <div class="bar w70"></div>
+              </div>
+              <div class="mini-section-title">推荐产品</div>
+              <div class="product-list-mini">
+                <div class="product-mini"><div class="product-thumb-mini"></div><div class="product-lines-mini"><span></span><span></span></div></div>
+                <div class="product-mini"><div class="product-thumb-mini"></div><div class="product-lines-mini"><span></span><span></span></div></div>
+              </div>
+              <div class="mini-section-title">今日教程</div>
+              <div class="tutorial-list-mini">
+                <div class="tutorial-mini"><div class="tutorial-num-mini">1</div><div class="tutorial-text-mini"><span></span><span></span></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="wire-card">
+          <h3>聊天反馈页：继续调整方案</h3>
+          <div class="phone">
+            <div class="screen">
+              <div class="home-title-text">继续问 AI，微调你的方案</div>
+              <div class="chat-bubble ai">这是你的入门护理方案，也可以告诉我你的预算和偏好。</div>
+              <div class="chat-bubble user">我不想用啫喱，会不会太硬？</div>
+              <div class="chat-bubble ai">可以先换成摩丝或轻盈弹力素，手感更自然。</div>
+              <div class="mini-section-title">快捷追问</div>
+              <div class="quick-questions">
+                <div class="quick"></div>
+                <div class="quick"></div>
+                <div class="quick"></div>
+              </div>
+              <div class="input-mini"></div>
+            </div>
+          </div>
+        </div>
+      </div></div>
+    </section>
+
+    <section>
+      <div class="section-title">
+        <h2>04 · AI Pipeline</h2>
+      </div>
+
+      <div class="architecture">
+        <div class="card">
+          <h3>推荐系统思路</h3>
+          <p>
+            采用“图片 + 问卷 + 种子产品库 + LLM 结构化输出”的方式。
+            AI 负责生成发质画像、产品建议、护理教程和聊天调整。
+          </p>
+
+          <div class="tag-row">
+            <span class="tag">Vision API</span>
+            <span class="tag">LLM API</span>
+            <span class="tag">Structured JSON</span>
+            <span class="tag">Seed Product DB</span>
+          </div>
+        </div>
+
+        <div class="pipeline">
+          <div class="pipe-item">
+            <strong>A. 照片分析</strong>
+            <span>卷度、毛躁、发量、干枯猜测</span>
+          </div>
+          <div class="arrow">↓</div>
+          <div class="pipe-item">
+            <strong>B. 发质画像</strong>
+            <span>结合问卷生成用户画像</span>
+          </div>
+          <div class="arrow">↓</div>
+          <div class="pipe-item">
+            <strong>C. 产品建议</strong>
+            <span>推荐产品类型 + 示例产品</span>
+          </div>
+          <div class="arrow">↓</div>
+          <div class="pipe-item">
+            <strong>D. 教程生成</strong>
+            <span>洗头日、第二天 refresh、新手避坑</span>
+          </div>
+          <div class="arrow">↓</div>
+          <div class="pipe-item">
+            <strong>E. 聊天反馈</strong>
+            <span>根据用户追问调整方案</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-title">
+        <h2>05 · 技术架构</h2>
+      </div>
+
+      <table class="table">
+        <thead>
+          <tr>
+            <th>模块</th>
+            <th>建议技术</th>
+            <th>职责</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>前端 Web App</td>
+            <td>Next.js / React / Tailwind CSS</td>
+            <td>首页、上传、问卷、结果页、聊天页。</td>
+          </tr>
+          <tr>
+            <td>后端 API</td>
+            <td>Next.js API Routes 或 FastAPI</td>
+            <td>接收用户输入，调用 AI API，返回结构化结果。</td>
+          </tr>
+          <tr>
+            <td>AI Orchestrator</td>
+            <td>Prompt + JSON Schema</td>
+            <td>控制照片分析、画像生成、推荐、教程、聊天。</td>
+          </tr>
+          <tr>
+            <td>产品数据</td>
+            <td>本地 JSON → Supabase</td>
+            <td>先维护 30 条种子产品，后续扩展为数据库。</td>
+          </tr>
+          <tr>
+            <td>部署</td>
+            <td>Vercel / Render / Railway</td>
+            <td>确保可访问、可演示、有 fallback。</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+
+    <section>
+      <div class="section-title">
+        <h2>06 · 种子产品库</h2>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>产品分类建议</h3>
+          <p>
+            洗发水、护发素、发膜、免洗护发、弹力素 / 卷发霜、
+            啫喱 / 摩丝、精油 / 护发油。
+          </p>
+          <div class="tag-row">
+            <span class="tag">每类 4-6 个</span>
+            <span class="tag">总量 30 左右</span>
+            <span class="tag">先手工整理</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>单条产品字段</h3>
+          <p>
+            产品名、品牌、类别、价格层级、适合问题、不适合情况、质地、
+            使用方法、推荐理由模板。
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-title">
+        <h2>07 · 其他注意事项</h2>
+      </div>
+
+      <table class="table">
+        <thead>
+          <tr>
+            <th>问题</th>
+            <th>简要方案</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>首页案例真实性</td>
+            <td>首版可使用模拟案例，但需要明确为“示例案例”；后续内测后替换为真实用户授权案例。</td>
+          </tr>
+          <tr>
+            <td>照片隐私</td>
+            <td>上传页说明照片仅用于生成护理建议；MVP 阶段可默认不长期保存原图。</td>
+          </tr>
+          <tr>
+            <td>AI 输出不稳定</td>
+            <td>所有 AI 结果使用结构化 JSON；前端只渲染固定字段，避免整页被自由文本破坏。</td>
+          </tr>
+          <tr>
+            <td>推荐显得不可信</td>
+            <td>每个产品类型和示例产品都必须附带“为什么适合你”和“怎么使用”。</td>
+          </tr>
+          <tr>
+            <td>产品数据不足</td>
+            <td>优先推荐产品类型，再给少量示例产品；不要把首版做成完整商品库。</td>
+          </tr>
+          <tr>
+            <td>护理建议过度承诺</td>
+            <td>文案中避免“保证有效”“专业诊断”等表达，统一写成“护理参考建议”。</td>
+          </tr>
+          <tr>
+            <td>用户不知道如何继续</td>
+            <td>结果页底部提供快捷追问，例如“预算更低怎么办”“不想用啫喱怎么办”“第二天炸毛怎么办”。</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <div class="footer">
+      AI 自然卷护理助手 MVP 规划 · Version 0.7 · For Internal Discussion
+    </div>
+  </main>
+</body>
+</html>
